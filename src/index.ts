@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type MarkdownIt from "markdown-it/lib/index.js"
-import { escapeHtml } from "markdown-it/lib/common/utils.js"
-import type Renderer from "markdown-it/lib/renderer.js"
-import type StateBlock from "markdown-it/lib/rules_block/state_block.js"
-import type StateInline from "markdown-it/lib/rules_inline/state_inline.js"
+import type MarkdownIt from "markdown-it/lib/index.mjs"
+import { escapeHtml } from "markdown-it/lib/common/utils.mjs"
+import type { RenderRule } from "markdown-it/lib/renderer.mjs"
+import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs"
+import type StateInline from "markdown-it/lib/rules_inline/state_inline.mjs"
 
 export interface IRenderOptions {
   displayMode: boolean
@@ -46,15 +46,13 @@ const OptionDefaults: Required<IOptions> = {
  * A markdown-it plugin for parsing dollar delimited math,
  * e.g. inline: ``$a=1$``, block: ``$$b=2$$`
  */
-export function dollarmathPlugin(md: MarkdownIt, options?: IOptions): void {
+export default function dollarmathPlugin(md: MarkdownIt, options?: IOptions): void {
   const fullOptions = { ...OptionDefaults, ...options }
   md.inline.ruler.before("escape", "math_inline", math_inline_dollar(fullOptions))
   md.block.ruler.before("fence", "math_block", math_block_dollar(fullOptions))
 
   const createRule =
-    (
-      opts: IRenderOptions & { inline?: boolean; hasLabel?: boolean }
-    ): Renderer.RenderRule =>
+    (opts: IRenderOptions & { inline?: boolean; hasLabel?: boolean }): RenderRule =>
     (tokens, idx) => {
       const content = tokens[idx].content.trim()
       let res: string
@@ -96,9 +94,6 @@ export function dollarmathPlugin(md: MarkdownIt, options?: IOptions): void {
     hasLabel: true
   })
 }
-
-// Exporting both a default and named export is necessary for Jest in some cases
-export default dollarmathPlugin
 
 /** Test if dollar is escaped */
 function isEscaped(state: StateInline, back_pos: number, mod = 0): boolean {
